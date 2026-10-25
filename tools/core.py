@@ -13,7 +13,7 @@ ICON = {'search':'<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>','he
 'home':'<path d="m3 11 9-8 9 8v10H3z"/>','play':'<path d="M8 5v14l11-7z" fill="currentColor"/>','bed':'<path d="M2 18V6M2 12h20v6M22 18v-4a3 3 0 0 0-3-3H10v7"/><circle cx="6" cy="10" r="2"/>',
 'bath':'<path d="M4 12h16v3a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM6 12V5a2 2 0 0 1 4 0"/>','chart':'<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>','doc':'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
 'building':'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2M10 21v-3h4v3"/>','zalo':'<path d="M4 5h16v11H9l-5 4z"/>','calc':'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M8 18h2M12 18h2"/>',
-'compass':'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>'}
+'scale':'<path d="M12 3v18M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z"/>','print':'<path d="M6 9V3h12v6M6 18H4v-7h16v7h-2"/><rect x="6" y="14" width="12" height="7"/>','up':'<path d="m18 15-6-6-6 6"/>','sliders':'<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>','grid':'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>','list':'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>','bell':'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/>','shield':'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>','ruler':'<path d="M3 17 17 3l4 4L7 21z"/><path d="m7 13 2 2M10 10l2 2M13 7l2 2"/>','compass':'<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>'}
 def ic(n, cls='ic'): return f'<svg class="{cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">{ICON[n]}</svg>'
 def money(p, mode):
     if mode == 'thue':
@@ -32,7 +32,7 @@ def lurl(mode, ts=None, city=None, dist=None, page=1):
 def detail_url(l): return f"tin/{l['id']}.html"
 TYPES = {'ban':BAN, 'thue':THUE}
 def tname(mode, ts): return dict((a,b) for a,b,_ in TYPES[mode])[ts]
-LOGO = '<svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#E03C31"/><path d="M8 18 17 10l9 8v8h-6v-5h-6v5H8z" fill="#fff"/></svg><span><b>NhàĐất Việt</b><small>Nền tảng BĐS (demo)</small></span>'
+LOGO = '<svg class="logo-mk" width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><rect x=".75" y=".75" width="38.5" height="38.5" rx="9" fill="#0E1A2B" stroke="#C9A96E" stroke-width="1.5"/><path d="M10 29V18.5L20 11l10 7.5V29" fill="none" stroke="#C9A96E" stroke-width="1.6" stroke-linejoin="round"/><path d="M15.5 29v-7.5h9V29" fill="none" stroke="#F3E7CF" stroke-width="1.6"/><path d="M8 29h24" stroke="#C9A96E" stroke-width="1.6" stroke-linecap="round"/></svg><span class="logo-tx"><b>NhàĐất Việt</b><small>Bất động sản tuyển chọn · demo</small></span>'
 
 def header(R, active=''):
     def dd(key, label, href, items):
@@ -48,7 +48,6 @@ def header(R, active=''):
     tt = [('Tin tức bất động sản','tin-tuc.html',False),('Bất động sản Hà Nội','tin-tuc-ha-noi.html',False),('Bất động sản TP.HCM','tin-tuc-tp-hcm.html',False)]
     nav = dd('ban','Nhà đất bán','nha-dat-ban.html',ban)+dd('thue','Nhà đất cho thuê','nha-dat-cho-thue.html',thue)+dd('duan','Dự án','du-an.html',duan)+dd('tin','Tin tức','tin-tuc.html',tt)+dd('wiki','Wiki BĐS','wiki.html',wiki)+dd('pt','Phân tích đánh giá','phan-tich-danh-gia.html',pt)+dd('db','Danh bạ','nha-moi-gioi.html',db)
     return f'''<a class="skip" href="#main">Bỏ qua đến nội dung</a>
-<div class="appbar" id="appbar"><button class="ab-x" aria-label="Đóng" data-close-appbar>{ic('x')}</button><span class="ab-logo" aria-hidden="true">NĐ</span><span><b>Mở App để xem đầy đủ</b><br><small>So sánh giá dễ dàng</small></span><a class="btn btn-sm" href="{R}gioi-thieu.html#app">Mở App</a></div>
 <header class="hdr"><div class="hdr-in">
 <a class="logo" href="{R}index.html" aria-label="NhàĐất Việt – Trang chủ">{LOGO}</a>
 <nav aria-label="Menu chính" class="nav-wrap" id="navWrap"><ul class="nav" id="nav">{nav}<li class="nv nv-mob"><a class="nv-a" href="{R}dang-nhap.html" data-auth="login">Đăng nhập</a></li><li class="nv nv-mob"><a class="nv-a" href="{R}dang-ky.html" data-auth="register">Đăng ký</a></li><li class="nv nv-mob"><a class="nv-a" href="{R}dang-tin.html">Đăng tin</a></li></ul></nav>
@@ -66,13 +65,14 @@ def footer(R, seo=''):
 <p class="fc">{ic('phone')} Hotline (demo): 1900 0000</p><p class="fc">{ic('mail')} hotro@nhadatviet.demo</p></div>{c}
 <form class="nl" data-demo-form="Đã đăng ký nhận bản tin (demo)"><h3>Đăng ký nhận tin</h3><label class="sr" for="nlmail">Email</label><input id="nlmail" type="email" required placeholder="Nhập email của bạn" autocomplete="email"><button class="btn btn-red">Gửi</button></form></div>
 <div class="ftr-b container">© 2026 NhàĐất Việt – sản phẩm demo, không liên kết với Batdongsan.com.vn hay bất kỳ sàn BĐS nào. Ảnh: Wikimedia Commons (xem <a href="{R}nguon-anh.html">nguồn ảnh</a>).</div></footer>
+<button type="button" class="totop" id="toTop" aria-label="Lên đầu trang" hidden>{ic('up')}</button><div class="cmp-tray" id="cmpTray" hidden></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>window.ROOT="{R}"</script><script src="{R}js/app.js" defer></script>'''
 
 def page(path, title, body, active='', desc='', seo='', extra_head='', body_cls=''):
     depth = path.count('/'); R = '../' * depth
-    doc = f'''<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)} | NhàĐất Việt</title>
-<meta name="description" content="{E(desc or title)}"><link rel="icon" href="{R}img/favicon.svg"><link rel="stylesheet" href="{R}css/style.css">{extra_head}</head><body class="{body_cls}">
+    doc = f'''<!doctype html><html lang="vi" class="no-js"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{E(title)} | NhàĐất Việt</title>
+<meta name="description" content="{E(desc or title)}"><link rel="icon" href="{R}img/favicon.svg"><meta name="theme-color" content="#0E1A2B"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Playfair+Display:wght@500;600;700&subset=vietnamese&display=swap"><link rel="stylesheet" href="{R}css/style.css"><link rel="stylesheet" href="{R}css/luxe.css">{extra_head}</head><body class="{body_cls}">
 {header(R, active)}<main id="main">{body(R) if callable(body) else body}</main>{footer(R, seo(R) if callable(seo) else seo)}</body></html>'''
     fp = os.path.join(OUT, path); os.makedirs(os.path.dirname(fp), exist_ok=True)
     open(fp, 'w').write(doc); PAGES.append(path)
@@ -81,11 +81,17 @@ def crumbs(R, items):
     li = ''.join(f'<li><a href="{R}{u}">{E(t)}</a></li>' if u else f'<li aria-current="page">{E(t)}</li>' for t,u in items)
     return f'<nav class="bc" aria-label="Breadcrumb"><ol>{li}</ol></nav>'
 
-VIPL = {'kimcuong':'VIP Kim Cương','vang':'VIP Vàng','bac':'VIP Bạc'}
+VIPL = {'kimcuong':'Độc quyền','vang':'Nổi bật','bac':'Đề xuất'}
+def cmpdata(l, R):
+    return E(json.dumps({'id':l['id'],'t':l['title'],'p':money(l['price'],l['mode']),'a':l['area'],'ppm':ppm(l),'b':l['beds'],'loc':f"{l['dist']}, {l['city']}",'img':img(l['img'][0],R),'u':R+detail_url(l),'dir':l['dir'],'lg':l['legal']}, ensure_ascii=False))
+def qacts(l, R):
+    return f'<span class="qa"><button class="heart" data-fav="{l["id"]}" aria-pressed="false" aria-label="Lưu tin">{ic("heart")}</button><button class="qbtn" data-compare=\'{cmpdata(l,R)}\' aria-pressed="false" aria-label="Thêm vào so sánh">{ic("scale")}</button></span>'
 def card(l, R):
-    return f'''<article class="pc"><a href="{R}{detail_url(l)}" class="th"><img src="{img(l['img'][0],R)}" alt="{E(l['title'])}" loading="lazy" width="400" height="300"><span class="cnt-img">{ic('img')}{6+l['id']%9}</span></a>
-<div class="pc-b"><h3><a href="{R}{detail_url(l)}">{E(l['title'])}</a></h3><p class="pr"><b>{money(l['price'],l['mode'])}</b> · <b>{l['area']} m²</b></p><p class="loc">{ic('pin')}{E(l['dist'])}, {E(l['city'])}</p>
-<div class="pc-f"><span>{ago(l['day'])}</span><button class="heart" data-fav="{l['id']}" aria-pressed="false" aria-label="Lưu tin">{ic('heart')}</button></div></div></article>'''
+    vip = f'<span class="badge b-{l["vip"]}">{VIPL[l["vip"]]}</span>' if l['vip'] in ('kimcuong','vang') else ''
+    feats = (f'<span>{ic("bed")}{l["beds"]} PN</span>' if l['beds'] else '') + f'<span>{ic("ruler")}{l["area"]} m²</span>'
+    return f'''<article class="pc"><div class="th"><a href="{R}{detail_url(l)}" tabindex="-1" aria-hidden="true"><img src="{img(l['img'][0],R)}" alt="" loading="lazy" decoding="async" width="400" height="300"></a>{vip}<span class="cnt-img">{ic('img')}{6+l['id']%9}</span>{qacts(l,R)}</div>
+<div class="pc-b"><p class="pr"><b>{money(l['price'],l['mode'])}</b>{f'<small>{ppm(l)}</small>' if l['mode']=='ban' else ''}</p><h3><a href="{R}{detail_url(l)}">{E(l['title'])}</a></h3><p class="loc">{ic('pin')}{E(l['dist'])}, {E(l['city'])}</p>
+<div class="pc-f"><span class="feats">{feats}</span><span class="ago">{ago(l['day']).replace('Đăng ','')}</span></div></div></article>'''
 def row(l, R):
     big = l['vip'] in ('kimcuong','vang')
     imgs = ''.join(f'<img src="{img(n,R)}" alt="" loading="lazy" width="300" height="225">' for n in l['img'][1:4]) if big else ''
@@ -93,11 +99,11 @@ def row(l, R):
     feats = (f'<span class="ft">{l["beds"]} {ic("bed")}</span><span class="ft">{l["baths"]} {ic("bath")}</span>') if l['beds'] else ''
     vip = f'<span class="vip v-{l["vip"]}">{VIPL[l["vip"]]}</span>' if l['vip'] in VIPL else ''
     ver = f'<span class="ver">{ic("check")}Xác thực</span> ' if l['verified'] else ''
-    return f'''<article class="lr{' lr-big' if big else ''}" data-price="{int(l['price'])}" data-area="{l['area']}" data-day="{l['day']}" data-ver="{1 if l['verified'] else 0}" data-mode="{l['mode']}"><a class="lr-media" href="{R}{detail_url(l)}" tabindex="-1" aria-hidden="true">{vip}<img class="lr-main" src="{img(l['img'][0],R)}" alt="" loading="lazy" width="600" height="450"><span class="lr-sub">{imgs}</span><span class="cnt-img">{ic('img')}{6+l['id']%9}</span></a>
+    return f'''<article class="lr{' lr-big' if big else ''}" data-price="{int(l['price'])}" data-area="{l['area']}" data-day="{l['day']}" data-ver="{1 if l['verified'] else 0}" data-mode="{l['mode']}"><a class="lr-media" href="{R}{detail_url(l)}" tabindex="-1" aria-hidden="true">{vip}<img class="lr-main" src="{img(l['img'][0],R)}" alt="" loading="lazy" decoding="async" width="600" height="450"><span class="lr-sub">{imgs}</span><span class="cnt-img">{ic('img')}{6+l['id']%9}</span></a>
 <div class="lr-b"><h3><a href="{R}{detail_url(l)}">{ver}{E(l['title'])}</a></h3>
-<p class="pr"><b>{money(l['price'],l['mode'])}</b> · <b>{l['area']} m²</b>{' · <span class=muted>'+ppm(l)+'</span>' if l['mode']=='ban' else ''} {feats}<span class="loc">{ic('pin')}{E(l['dist'])}, {E(l['city'])}</span></p>
+<p class="pr"><b class="pv">{money(l['price'],l['mode'])}</b><span class="ft">{ic('ruler')}{l['area']} m²</span>{'<span class=muted>'+ppm(l)+'</span>' if l['mode']=='ban' else ''} {feats}<span class="loc">{ic('pin')}{E(l['dist'])}, {E(l['city'])}</span></p>
 <p class="desc">{E(l['title'])}. Vị trí gần đường {E(l['street'])}, {E(l['dist'])}, thuận tiện di chuyển. Diện tích {l['area']} m², hướng {l['dir']}, pháp lý: {E(l['legal'].lower())}, nội thất {l['furn'].lower()}.</p>
-<div class="lr-f"><span class="ag"><span class="av" aria-hidden="true">{a.split()[-1][0]}</span><span>{E(a)}<br><small>{ago(l['day'])}</small></span></span><span class="lr-act"><button class="btn btn-teal btn-sm" data-phone="{ph}">{ic('phone')}<span>{ph[:7]} *** · Hiện số</span></button><button class="heart" data-fav="{l['id']}" aria-pressed="false" aria-label="Lưu tin">{ic('heart')}</button></span></div></div></article>'''
+<div class="lr-f"><span class="ag"><span class="av" aria-hidden="true">{a.split()[-1][0]}</span><span>{E(a)}<br><small>{ago(l['day'])}</small></span></span><span class="lr-act"><button class="btn btn-teal btn-sm" data-phone="{ph}">{ic('phone')}<span>{ph[:7]} *** · Hiện số</span></button><button class="heart" data-fav="{l['id']}" aria-pressed="false" aria-label="Lưu tin">{ic('heart')}</button><button class="qbtn" data-compare='{cmpdata(l,R)}' aria-pressed="false" aria-label="Thêm vào so sánh">{ic('scale')}</button></span></div></div></article>'''
 def pcard(p, R):
     return f'''<article class="pj"><a href="{R}du-an/{p['slug']}.html" class="th"><img src="{img(p['img'][0],R)}" alt="{E(p['name'])}" loading="lazy" width="400" height="300"><span class="st st-{p['id']%3}">{p['status']}</span></a>
 <div class="pc-b"><h3><a href="{R}du-an/{p['slug']}.html">{E(p['name'])}</a></h3><p class="pr">{p['price']} triệu/m² · {p['ha']} ha</p><p class="loc">{ic('pin')}{E(p['dist'])}, {E(p['city'])}</p></div></article>'''

@@ -56,7 +56,7 @@ var rows=$('#rows');
 if(rows){var st={},items=$$('article.lr',rows),sortSel=$('[data-sort]'),ver=$('[data-verified]');
  function apply(){var n=0;items.forEach(function(a){var ok=true;for(var k in st){var v=+a.dataset[k];if(v<st[k][0]||v>=st[k][1])ok=false}if(ver&&ver.checked&&a.dataset.ver!=='1')ok=false;a.hidden=!ok;if(ok)n++});
   var s=sortSel&&sortSel.value;if(s){var arr=items.slice().sort(function(x,y){if(s==='new')return x.dataset.day-y.dataset.day;if(s==='pa')return x.dataset.price-y.dataset.price;if(s==='pd')return y.dataset.price-x.dataset.price;if(s==='aa')return x.dataset.area-y.dataset.area;if(s==='ad')return y.dataset.area-x.dataset.area;return 0});arr.forEach(function(a){rows.appendChild(a)})}
-  var nr=$('#noRes');if(nr)nr.hidden=n>0||!items.length}
+  var nr=$('#noRes');if(nr)nr.hidden=n>0||!items.length;document.dispatchEvent(new CustomEvent('ndf',{detail:{n:n,total:items.length}}))}
  $$('[data-k]').forEach(function(b){b.addEventListener('click',function(){var k=b.dataset.k,on=b.getAttribute('aria-pressed')==='true';$$('[data-k="'+k+'"]').forEach(function(x){x.setAttribute('aria-pressed','false')});if(on)delete st[k];else{st[k]=[+b.dataset.min,+b.dataset.max];b.setAttribute('aria-pressed','true')}apply()})});
  $$('select[data-k-sel]').forEach(function(s){s.addEventListener('change',function(){var k=s.dataset.kSel;if(!s.value)delete st[k];else{var p=s.value.split('-');st[k]=[+p[0],+p[1]]}apply()})});
  sortSel&&sortSel.addEventListener('change',apply);ver&&ver.addEventListener('change',apply);
@@ -112,4 +112,58 @@ var mp=$('#myPosts');
 if(mp){var posts=LS.get('nd_posts',[]);mp.innerHTML=posts.length?posts.map(function(p,i){return'<div class="mp"><div><b>'+esc(p.t)+'</b><br><small class="muted">'+esc((p.m==='ban'?'Bán':'Cho thuê')+' · '+p.dist+', '+p.city+' · '+p.area+' m² · '+p.price+' · '+p.plan+' · '+p.at)+'</small></div><button class="btn btn-sm" data-del="'+i+'">Xóa</button></div>'}).join(''):'<p class="empty">Chưa có tin đăng nào. <a class="red" href="'+R+'dang-tin.html">Đăng tin đầu tiên</a></p>';
  mp.addEventListener('click',function(e){var b=e.target.closest('[data-del]');if(!b)return;posts.splice(+b.dataset.del,1);LS.set('nd_posts',posts);location.reload()})}
 var pr2=$('[data-profile]');if(pr2){var u=user()||{};if(pr2.name)pr2.name.value=u.name||'';pr2.addEventListener('submit',function(e){e.preventDefault();var u=user()||{};u.name=pr2.name.value;LS.set('nd_user',u);toast('Đã lưu thông tin (demo)');renderAcct()})}
+
+/* ===== Premium UX layer ===== */
+document.documentElement.classList.remove('no-js');
+var rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* image fade-in after load (skeleton shimmer underneath) */
+function imgLd(i){if(i.complete&&i.naturalWidth)i.classList.add('ld');else{i.addEventListener('load',function(){i.classList.add('ld')});i.addEventListener('error',function(){i.classList.add('ld')})}}
+$$('.th img').forEach(imgLd);new MutationObserver(function(ms){ms.forEach(function(m){m.addedNodes.forEach(function(n){if(n.querySelectorAll)$$('.th img',n).forEach(imgLd)})})}).observe(document.body,{childList:true,subtree:true});
+/* header shadow + back to top */
+var hdr=$('.hdr'),tt=$('#toTop');function onScroll(){var y=window.scrollY;hdr&&hdr.classList.toggle('scrolled',y>8);if(tt){if(y>900){tt.hidden=false;requestAnimationFrame(function(){tt.classList.add('show')})}else tt.classList.remove('show')}}
+window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+tt&&tt.addEventListener('click',function(){window.scrollTo({top:0,behavior:rm?'auto':'smooth'});var m=$('#main');if(m){m.setAttribute('tabindex','-1');m.focus({preventScroll:true})}});
+if($('.mbar'))document.body.classList.add('has-mbar');
+/* print */
+document.addEventListener('click',function(e){if(e.target.closest('[data-print]'))window.print()});
+/* inline form validation messages */
+document.addEventListener('invalid',function(e){var f=e.target;if(!f.matches||!f.matches('input,textarea,select'))return;e.preventDefault();f.setAttribute('aria-invalid','true');var id=(f.id||(f.id='f'+Math.random().toString(36).slice(2,8)))+'-err',m=document.getElementById(id);if(!m){m=document.createElement('span');m.className='ferr';m.id=id;f.insertAdjacentElement('afterend',m);f.setAttribute('aria-describedby',id)}m.textContent=f.dataset.msg||(f.validity.valueMissing?'Vui lòng điền thông tin này':f.validity.typeMismatch?'Định dạng chưa đúng':f.validationMessage);var first=f.form&&f.form.querySelector('[aria-invalid=true]');if(first===f)f.focus()},true);
+document.addEventListener('input',function(e){var f=e.target;if(f.getAttribute&&f.getAttribute('aria-invalid')==='true'&&f.checkValidity()){f.removeAttribute('aria-invalid');var m=document.getElementById(f.id+'-err');m&&m.remove()}});
+/* home autocomplete */
+var acI=$('#hq'),acL=$('#acList'),acD=$('#acData');
+if(acI&&acL&&acD){var SUG=JSON.parse(acD.textContent),act=-1,cur=[];
+ function nrm(s){return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d')}
+ function close(){acL.hidden=true;acI.setAttribute('aria-expanded','false');acI.removeAttribute('aria-activedescendant');act=-1}
+ function hl(t,q){var i=nrm(t).indexOf(q);return i<0?esc(t):esc(t.slice(0,i))+'<mark>'+esc(t.slice(i,i+q.length))+'</mark>'+esc(t.slice(i+q.length))}
+ function render(){var q=nrm(acI.value.trim());if(q.length<1){close();return}cur=SUG.filter(function(x){return nrm(x.t+' '+x.s).indexOf(q)>-1}).sort(function(a,b){return nrm(a.t).indexOf(q)-nrm(b.t).indexOf(q)}).slice(0,8);
+  if(!cur.length){acL.innerHTML='<li role="option" aria-disabled="true"><span>Không có gợi ý – nhấn Tìm kiếm để tìm theo từ khóa</span></li>'}else acL.innerHTML=cur.map(function(x,i){return'<li role="option" id="ac'+i+'" aria-selected="false" data-i="'+i+'"><span>'+hl(x.t,q)+' <small>· '+esc(x.s)+'</small></span><span class="k">'+esc(x.k)+'</span></li>'}).join('');acL.hidden=false;acI.setAttribute('aria-expanded','true');act=-1}
+ function mv(d){var o=$$('[data-i]',acL);if(!o.length)return;act=(act+d+o.length)%o.length;o.forEach(function(x,i){x.setAttribute('aria-selected',i===act)});acI.setAttribute('aria-activedescendant','ac'+act);o[act].scrollIntoView({block:'nearest'})}
+ acI.addEventListener('input',render);acI.addEventListener('focus',render);
+ acI.addEventListener('keydown',function(e){if(acL.hidden)return;if(e.key==='ArrowDown'){e.preventDefault();mv(1)}else if(e.key==='ArrowUp'){e.preventDefault();mv(-1)}else if(e.key==='Enter'&&act>-1){e.preventDefault();location.href=cur[act].u}else if(e.key==='Escape'){close()}});
+ acL.addEventListener('mousedown',function(e){var li=e.target.closest('[data-i]');if(li){e.preventDefault();location.href=cur[+li.dataset.i].u}});
+ acI.addEventListener('blur',function(){setTimeout(close,120)})}
+/* listing: applied filter chips, view toggle, mobile sheet, saved search */
+var fc=$('#fchips');
+if(fc){var fcount=$('#fcount');
+ function chips(ev){var h='';$$('[data-k][aria-pressed=true]').forEach(function(b){h+='<button type="button" class="fchip" data-unk="'+b.dataset.k+'" aria-label="Bỏ lọc '+esc(b.textContent)+'">'+esc(b.textContent)+'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>'});var v=$('[data-verified]');if(v&&v.checked)h+='<button type="button" class="fchip" data-unv aria-label="Bỏ lọc tin xác thực">Tin xác thực<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>';
+  var n=ev&&ev.detail?ev.detail.n:$$('#rows article.lr').length;fc.innerHTML='<span class="muted">'+n+' tin trên trang này</span>'+h+(h?'<button type="button" class="fclear" data-reset2>Xóa tất cả</button>':'');var mb=$('[data-open-filters] span');if(mb)mb.textContent=h?'Bộ lọc ('+$$('.fchip',fc).length+')':'Bộ lọc'}
+ document.addEventListener('ndf',chips);
+ fc.addEventListener('click',function(e){var c=e.target.closest('[data-unk]');if(c){var b=$('[data-k="'+c.dataset.unk+'"][aria-pressed=true]');b&&b.click();return}if(e.target.closest('[data-unv]')){var v=$('[data-verified]');v.checked=false;v.dispatchEvent(new Event('change'));return}if(e.target.closest('[data-reset2]')){var r=$('[data-reset]');r&&r.click()}});
+ var rowsEl=$('#rows');$$('[data-view]').forEach(function(b){b.addEventListener('click',function(){var g=b.dataset.view==='grid';rowsEl.classList.toggle('grid',g);$$('[data-view]').forEach(function(x){x.setAttribute('aria-pressed',x===b)});LS.set('nd_view',b.dataset.view)})});
+ if(LS.get('nd_view')==='grid'){var gb=$('[data-view=grid]');gb&&gb.click()}
+ var side=$('#sideF'),ob=$('[data-open-filters]');
+ function sheet(o){document.body.classList.toggle('sheet-open',o);ob&&ob.setAttribute('aria-expanded',o);document.body.style.overflow=o?'hidden':'';if(o){var f=$('[data-close-filters]',side);f&&f.focus()}else ob&&ob.focus()}
+ ob&&ob.addEventListener('click',function(){sheet(true)});$$('[data-close-filters]').forEach(function(b){b.addEventListener('click',function(){sheet(false)})});
+ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&document.body.classList.contains('sheet-open'))sheet(false)});
+ document.addEventListener('click',function(e){if(document.body.classList.contains('sheet-open')&&!e.target.closest('#sideF')&&!e.target.closest('[data-open-filters]'))sheet(false)})}
+document.addEventListener('click',function(e){if(!e.target.closest('[data-save-search]'))return;var s=LS.get('nd_searches',[]),u=location.pathname;if(s.indexOf(u)<0){s.push(u);LS.set('nd_searches',s)}toast('Đã lưu tìm kiếm – bạn sẽ được báo khi có tin mới (demo)')});
+/* compare (max 3) */
+var CMP=LS.get('nd_cmp',[]),tray=$('#cmpTray');
+function syncCmp(){$$('[data-compare]').forEach(function(b){try{var id=JSON.parse(b.dataset.compare).id}catch(e){return}var on=CMP.some(function(x){return x.id===id});b.setAttribute('aria-pressed',on);b.setAttribute('aria-label',on?'Bỏ khỏi so sánh':'Thêm vào so sánh')});
+ if(!tray)return;if(!CMP.length){tray.hidden=true;return}tray.hidden=false;tray.innerHTML='<span class="thumbs">'+CMP.map(function(x){return'<img src="'+esc(x.img)+'" alt="">'}).join('')+'</span><span class="lbl">'+CMP.length+'/3 bất động sản</span><button type="button" class="btn btn-red btn-sm" data-cmp-open>So sánh</button><button type="button" class="x" data-cmp-clear>Xóa</button>'}
+document.addEventListener('click',function(e){var b=e.target.closest('[data-compare]');if(b){e.preventDefault();var it=JSON.parse(b.dataset.compare),i=CMP.findIndex(function(x){return x.id===it.id});if(i>-1){CMP.splice(i,1);toast('Đã bỏ khỏi danh sách so sánh')}else{if(CMP.length>=3){toast('Chỉ so sánh tối đa 3 bất động sản');return}CMP.push(it);toast('Đã thêm vào so sánh ('+CMP.length+'/3)')}LS.set('nd_cmp',CMP);syncCmp();return}
+ if(e.target.closest('[data-cmp-clear]')){CMP=[];LS.set('nd_cmp',CMP);syncCmp();toast('Đã xóa danh sách so sánh');return}
+ if(e.target.closest('[data-cmp-open]')){var rows=[['','img'],['Giá','p'],['Đơn giá','ppm'],['Diện tích','a'],['Phòng ngủ','b'],['Hướng','dir'],['Pháp lý','lg'],['Vị trí','loc']];
+  var h='<h2 style="margin:0 0 16px">So sánh bất động sản</h2><div class="tbl-wrap"><table class="cmp-tbl"><tbody>'+rows.map(function(r){return'<tr><th scope="row">'+r[0]+'</th>'+CMP.map(function(x){var v=x[r[1]];if(r[1]==='img')return'<td><a href="'+esc(x.u)+'"><img src="'+esc(v)+'" alt=""></a><a href="'+esc(x.u)+'"><small>'+esc(x.t)+'</small></a></td>';if(r[1]==='p')return'<td><b>'+esc(v)+'</b></td>';if(r[1]==='a')return'<td>'+v+' m²</td>';if(r[1]==='b')return'<td>'+(v?v+' PN':'–')+'</td>';return'<td>'+esc(v||'–')+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';modal(h,'cmp')}});
+syncCmp();
 })();
