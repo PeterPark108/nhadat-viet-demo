@@ -167,3 +167,46 @@ document.addEventListener('click',function(e){var b=e.target.closest('[data-comp
   var h='<h2 style="margin:0 0 16px">So sánh bất động sản</h2><div class="tbl-wrap"><table class="cmp-tbl"><tbody>'+rows.map(function(r){return'<tr><th scope="row">'+r[0]+'</th>'+CMP.map(function(x){var v=x[r[1]];if(r[1]==='img')return'<td><a href="'+esc(x.u)+'"><img src="'+esc(v)+'" alt=""></a><a href="'+esc(x.u)+'"><small>'+esc(x.t)+'</small></a></td>';if(r[1]==='p')return'<td><b>'+esc(v)+'</b></td>';if(r[1]==='a')return'<td>'+v+' m²</td>';if(r[1]==='b')return'<td>'+(v?v+' PN':'–')+'</td>';return'<td>'+esc(v||'–')+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>';modal(h,'cmp')}});
 syncCmp();
 })();
+
+/* hero slider */
+(function(){
+  var root=document.querySelector('[data-hslider]');if(!root)return;
+  var slides=root.querySelectorAll('.hslide'),texts=root.querySelectorAll('.hs-text'),dots=root.querySelectorAll('.hs-dot');
+  var n=slides.length,cur=0,timer=null,DUR=6000,hover=false,focus=false;
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  root.style.setProperty('--hs-dur',DUR+'ms');
+  function go(i,user){
+    i=(i+n)%n;if(i===cur&&!user)return;
+    [slides,texts,dots].forEach(function(list){list.forEach(function(el,k){el.classList.toggle('is-on',k===i)})});
+    slides.forEach(function(el,k){el.setAttribute('aria-hidden',k===i?'false':'true');var im=el.querySelector('img');if(k===i&&im)im.loading='eager'});
+    texts.forEach(function(el,k){el.setAttribute('aria-hidden',k===i?'false':'true');var a=el.querySelector('a');if(a)a.tabIndex=k===i?0:-1});
+    dots.forEach(function(d,k){if(k===i)d.setAttribute('aria-current','true');else d.removeAttribute('aria-current')});
+    cur=i;
+    var nx=slides[(i+1)%n].querySelector('img');if(nx)nx.loading='eager';
+    restart();
+  }
+  function stop(){clearTimeout(timer);timer=null;root.classList.add('paused')}
+  function restart(){
+    clearTimeout(timer);
+    if(reduce||hover||focus||document.hidden){root.classList.add('paused');return}
+    root.classList.remove('paused');
+    var d=dots[cur];if(d){d.classList.remove('is-on');void d.offsetWidth;d.classList.add('is-on')}
+    timer=setTimeout(function(){go(cur+1)},DUR);
+  }
+  root.querySelectorAll('[data-hs]').forEach(function(b){b.addEventListener('click',function(){go(cur+(+b.dataset.hs),true)})});
+  dots.forEach(function(d){d.addEventListener('click',function(){go(+d.dataset.go,true)})});
+  var media=root.querySelector('.hs-track'),txt=root.querySelector('.hs-texts'),ctl=root.querySelector('.hs-ctrl');
+  [media,txt,ctl].forEach(function(el){if(!el)return;el.addEventListener('mouseenter',function(){hover=true;stop()});el.addEventListener('mouseleave',function(){hover=false;restart()})});
+  root.addEventListener('focusin',function(){focus=true;stop()});
+  root.addEventListener('focusout',function(e){if(!root.contains(e.relatedTarget)){focus=false;restart()}});
+  document.addEventListener('visibilitychange',function(){document.hidden?stop():restart()});
+  root.addEventListener('keydown',function(e){
+    if(e.target.closest('form'))return;
+    if(e.key==='ArrowRight'){go(cur+1,true);e.preventDefault()}else if(e.key==='ArrowLeft'){go(cur-1,true);e.preventDefault()}
+  });
+  var sx=null,sy=0;
+  root.addEventListener('touchstart',function(e){if(e.target.closest('form'))return;sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  root.addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy))go(cur+(dx<0?1:-1),true);sx=null},{passive:true});
+  window.hsGo=go;
+  restart();
+})();
